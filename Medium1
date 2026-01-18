@@ -1,0 +1,22 @@
+with cte as (
+select h.hacker_id,name,count(c.challenge_id) total_challenges_created
+from Hackers h join Challenges c on h.hacker_id=c.hacker_id
+group by h.hacker_id,name
+),
+more_than_one as (
+select total_challenges_created
+from cte
+group by total_challenges_created
+having count(hacker_id)>1
+),
+max_challenges as (
+select max(total_challenges_created) max_challenges
+from cte
+)
+select cte.hacker_id,cte.name,cte.total_challenges_created
+from cte, max_challenges
+where cte.total_challenges_created = max_challenges.max_challenges
+or cte.total_challenges_created not in (
+    select total_challenges_created from more_than_one
+)
+order by cte.total_challenges_created desc, cte.hacker_id;
